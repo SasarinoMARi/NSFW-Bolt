@@ -1,4 +1,4 @@
-__fn = 'kindan.db'
+__fn = 'nsfw bolt.db'
 import sqlite3
 import datetime
 from collections import namedtuple
@@ -15,8 +15,10 @@ def initializeTables(cursor):
     cursor.execute('''CREATE TABLE IF NOT EXISTS Files(
             idx INTEGER PRIMARY KEY AUTOINCREMENT,
             name TEXT NOT NULL,
+            filename TEXT NOT NULL,
             directory TEXT NOT NULL,
-            isFolder BOOLEAN NOT NULL)''')
+            isFolder BOOLEAN NOT NULL,
+            extension TEXT)''')
             
     cursor.execute('''CREATE TABLE IF NOT EXISTS Rates(
             idx INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -27,10 +29,7 @@ def initializeTables(cursor):
             
     cursor.execute('''CREATE TABLE IF NOT EXISTS Tag(
             idx INTEGER PRIMARY KEY AUTOINCREMENT,
-            fidx INTEGER,
-            name TEXT NOT NULL, 
-
-            FOREIGN KEY(fidx) REFERENCES Files(idx))''')
+            name TEXT NOT NULL)''')
             
     cursor.execute('''CREATE TABLE IF NOT EXISTS Tags(
             idx INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -44,25 +43,71 @@ def initializeTables(cursor):
             exetension TEXT PRIMARY KEY,
             process TEXT NOT NULL)''')
 
-def insert(cursor, data):
-    sql = f'''INSERT INTO Files(name, path) VALUES(
-        '{data[0]}','{data[1]}')'''
-    cursor.execute(sql)
+# 새 파일 추가
+def addFile(cursor, data):
+    print(data)
+    sql = f'''INSERT INTO Files(name, filename, directory, isFolder, extension) VALUES(
+        '{data['name']}','{data['name']}','{data['directory']}', '{data['isFolder']}', '{data['extension']}')'''
 
-def show(cursor):
-    sql = '''SELECT * FROM Files'''
-    for row in cursor.execute(sql):
-        print(row)
+    print(sql)
+    result = cursor.execute(sql)
+    print(result)
+    
 
-def sampleData():
-    return "name", datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+# 별점 추가
+def setRate(cursor, id, rate):
+    sql = f'''INSERT INTO Rates(fidx, rate) VALUES(
+        '{id}','{rate}')'''
+    result = cursor.execute(sql)
+    print(result)
 
-def test() :
-    data = sampleData()
-    connection, cursor = establish()
-    initializeTables(cursor)
-    # insert(cursor, data)
-    show(cursor)
-    distroy(connection)
+# 별점 삭제
+def removeTag(cursor, id):
+    sql = f'''DELETE FROM Rates WHERE fidx IS '{id}')'''
+    result = cursor.execute(sql)
+    print(result)
+    
 
-test()
+# 태그 추가
+def addTag(cursor, name):
+    sql = f'''INSERT INTO Tag(name) VALUES(
+        '{name}')'''
+    result = cursor.execute(sql)
+    print(result)
+
+# 태그 삭제
+def removeTag(cursor, name):
+    sql = f'''DELETE FROM Tag WHERE name IS '{name}')'''
+    result = cursor.execute(sql)
+    print(result)
+
+
+# 파일에 태그 추가
+def setTag(cursor, id, tagId):
+    sql = f'''INSERT INTO Tags(fidx, tidx) VALUES(
+        '{id}','{tagId}')'''
+    result = cursor.execute(sql)
+    print(result)
+
+# 파일에 태그 삭제
+def removeTag(cursor, id, tagId):
+    sql = f'''DELETE FROM Tags WHERE fidx IS '{id}' AND tidx IS '{tagId}'')'''
+    result = cursor.execute(sql)
+    print(result)
+
+    
+# 확장자 추가
+def addExtensions(cursor, exetension, process):
+    sql = f'''INSERT INTO Exetensions(exetension, process) VALUES(
+        '{exetension}','{process}')'''
+    result = cursor.execute(sql)
+    print(result)
+    
+
+# def show(cursor):
+#     sql = '''SELECT * FROM Files'''
+#     for row in cursor.execute(sql):
+#         print(row)
+
+# def sampleData():
+#     return "name", datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
