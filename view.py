@@ -4,7 +4,7 @@ from PyQt5.QtCore import *
 from PyQt5.QtGui import *
 import dbInterface
 
-class FileView(QVBoxLayout):
+class FileView(QWidget):
     defaultThumbnail = "thumb/sample.jpg"
 
     thumbnail = None
@@ -12,20 +12,24 @@ class FileView(QVBoxLayout):
 
     def __init__(self, root):
         super().__init__()
+        layout = QVBoxLayout()
 
         self.thumbnail = QLabel(root)
         self.thumbnail.resize(100, 100)
+        self.thumbnail.setMinimumSize(100, 100)
         self.setThumbnail(self.defaultThumbnail)
-        self.addWidget(self.thumbnail)
+        layout.addWidget(self.thumbnail)
         
         self.label = QLabel(root)
         f = self.label.font()
         f.setFamily('맑은 고딕')
         f.setPointSize(15)
         self.label.setFont(f)
+        layout.addWidget(self.label)
  
         # self.resize(100, 120)
-        self.addWidget(self.label)
+        self.setLayout(layout)
+        # self.setMinimumSize(100, 100)
 
     def setText(self, text):
         self.label.setText(text)
@@ -55,16 +59,17 @@ class MyApp(QWidget):
 
         for column in range(int(len(files)/3)):
             for row in range(5):
-                print(f'{column*3+row} / {len(files)}')
                 if(column*3+row >= len(files)): continue
 
                 v = FileView(self)
                 v.setText(files[column*3+row].name)
-                grid.addLayout(v, column, row)
+                grid.addWidget(v, column, row)
 
+        content = QWidget()
+        content.setLayout(grid)
 
         scrollView = QScrollArea()
-        scrollView.setLayout(grid)
+        scrollView.setWidget(content)
 
         root = QHBoxLayout()
         root.addWidget(scrollView)
