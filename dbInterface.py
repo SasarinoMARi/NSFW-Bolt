@@ -5,6 +5,7 @@ from collections import namedtuple
 
 def establish():
     conn = sqlite3.connect(__fn)
+    conn.row_factory = sqlite3.Row
     return conn, conn.cursor()
 
 def distroy(connection):
@@ -46,14 +47,23 @@ def initializeTables(cursor):
 
 # 새 파일 추가
 def addFile(cursor, data):
-    print(data)
-    sql = f'''INSERT INTO Files(name, filename, directory, isFolder, extension) VALUES(
-        '{data['name']}','{data['name']}','{data['directory']}', '{data['isFolder']}', '{data['extension']}')'''
+    if data['extension'] is None: data['extension'] = 'NULL'
+    else: data['extension'] = f"'{data['extension']}'"
 
-    print(sql)
+    sql = f'''INSERT INTO Files(name, filename, directory, isFolder, extension) VALUES(
+        '{data['name']}','{data['name']}','{data['directory']}', {data['isFolder']}, {data['extension']})'''
     result = cursor.execute(sql)
-    print(result)
     
+from nFile import *
+def getFiles(cursor) :
+    sql = f'''SELECT * from Files'''
+    result = cursor.execute(sql)
+
+    files = []
+    for item in result:
+        f = nFile.createWithRow(item)
+        files.append(f)
+    return files
 
 # 별점 추가
 def setRate(cursor, id, rate):
