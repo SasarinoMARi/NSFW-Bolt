@@ -37,4 +37,4 @@ else:
 
 dbInterface.distroy(conn)
 
-input("")
+input("작업이 완료되었습니다. 아무 키나 눌러주세요.")

@@ -1,4 +1,4 @@
-__fn = 'nsfw bolt.db'
+__fn = 'bolt.db'
 import sqlite3
 import datetime
 from collections import namedtuple
@@ -18,7 +18,8 @@ def initializeTables(cursor):
             filename TEXT NOT NULL,
             directory TEXT NOT NULL,
             isFolder BOOLEAN NOT NULL,
-            extension TEXT)''')
+            extension TEXT,
+            thumbnail TEXT)''')
             
     cursor.execute('''CREATE TABLE IF NOT EXISTS Rates(
             idx INTEGER PRIMARY KEY AUTOINCREMENT,
