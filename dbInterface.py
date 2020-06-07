@@ -56,7 +56,7 @@ def addFile(cursor, data):
     
 from nFile import *
 def getFiles(cursor) :
-    sql = f'''SELECT * from Files'''
+    sql = f'''SELECT F.idx, F.name, F.filename, F."directory", F.isFolder, F.extension, F.thumbnail, R.rate, GROUP_CONCAT(Tag.name, ',') AS 'Tags' FROM Files AS F LEFT JOIN Tags AS T ON T.fidx is F.idx LEFT JOIN Tag ON T.tidx IS Tag.idx LEFT JOIN Rates AS R ON R.fidx is F.idx GROUP BY F.idx'''
     result = cursor.execute(sql)
 
     files = []
