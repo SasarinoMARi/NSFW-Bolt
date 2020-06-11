@@ -8,7 +8,8 @@ from nFile import *
 class MyApp(QWidget):
 
     files = None
-    selectedIdx = None
+    search = None
+    listView = None
 
     def __init__(self):
         super().__init__()
@@ -45,18 +46,21 @@ class MyApp(QWidget):
         self.setLayout(root)
         dbInterface.distroy(conn)
 
-    def makeList(self):
+    def updateListContent(self, keyword=""):
         conn, c = dbInterface.establish()
-        files = dbInterface.getFiles(c)
-
-        view = QListView(self)
+        files = dbInterface.getFiles(c, keyword)
         model = FileModel(self, files)
-        view.setModel(model)
-        view.setItemDelegate(FileModelDelegate(self))
+        print(f"len:{len(files)}")
+        self.listView.setModel(model)
 
         dbInterface.distroy(conn)
 
-        return view
+    def makeList(self):
+        self.listView = QListView(self)
+        self.listView.setItemDelegate(FileModelDelegate(self))
+        self.updateListContent()
+
+        return self.listView
 
     def _makeScroll(self):
         conn, c = dbInterface.establish()
@@ -106,13 +110,31 @@ class MyApp(QWidget):
 
         return layout
 
+
+    def searchTextChanged(self):
+        self.updateListContent(self.search.text())
+
+    def makeSearch(self):
+        self.search = QLineEdit()
+        self.search.textChanged.connect(self.searchTextChanged)
+        return self.search
+
     def initUI(self):
         self.setWindowTitle('NSFW Bolt')
         self.resize(700, 600)
         self.center()
         root = QHBoxLayout()
+
+        layout1 = QVBoxLayout()
+
+        search = self.makeSearch()
+        layout1.addWidget(search)
+
         li = self.makeList()
-        root.addWidget(li)
+        layout1.addWidget(li)
+
+        root.addLayout(layout1)
+
         buttonView = self.makeButton()
         root.addLayout(buttonView)
         self.setLayout(root)

@@ -1,2 +1,7 @@
 리스트뷰 성능 향상 관련
     https://stackoverflow.com/questions/53105343/is-it-possible-to-add-a-custom-widget-into-a-qlistview
+
+Size 힌트 어떻게 잘 줘서 메인 윈도우 크기 조절 잘 비비기
+
+db 연결과 해제 시점을 프로그램 시작 종료로 옮기기
+db 백업
