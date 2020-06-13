@@ -7,17 +7,15 @@ from TagListWindow import *
 
 class TagWindow(QDialog):
     file = None
-    listIdx = None
 
     wListView = None
 
     newTagIds = None
     deletedTagIds = None
 
-    def __init__(self, file, listIdx):
+    def __init__(self, file):
         super().__init__()
         self.file = file
-        self.listIdx = listIdx
         self.newTagIds = []
         self.deletedTagIds = []
         self.initUI()

@@ -5,14 +5,12 @@ from nFile import *
 
 class RateWindow(QDialog):
     file = None
-    listIdx = None
     wStars = []
     currentRate = None
 
-    def __init__(self, file, listIdx):
+    def __init__(self, file):
         super().__init__()
         self.file = file
-        self.listIdx = listIdx
         self.currentRate = file.rate if not file.rate is None else 0
         self.wStars = []
         self.initUI()

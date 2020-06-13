@@ -1,3 +1,4 @@
+import os
 from PyQt5.QtWidgets import *
 from PyQt5.QtCore import *
 from PyQt5.QtGui import *
@@ -31,11 +32,10 @@ class MainWindow(QWidget):
     # nFile 인스턴스와 list에서의 index 반환
     def getSelectedFile(self):
         idxes = self.wListView.selectedIndexes()
-        if len(idxes) == 0: return None, None
-        idx = idxes[0].row()
-        item = self.files[idx]
+        if len(idxes) == 0: return None
+        item = self.files[idxes[0].row()]
         print(f'Selected File: {item.name}')
-        return item, idx
+        return item
 
     def initUIListView(self):
         self.wListView = QListView(self)
@@ -50,14 +50,19 @@ class MainWindow(QWidget):
 
         def showDetailWindow():
             file = self.getSelectedFile()
+            path = os.path.realpath(os.path.join(file.directory, file.fileName))
+            if file.extension != None and file.extension != 'None': path+=f'.{file.extension}'
+            if os.path.exists(path): os.startfile(path)
+            else:
+                result = QMessageBox.critical(self, "Error", f"Cannot find File or Directory:\n\n{path}")
 
         buttonDetail = QPushButton()
         buttonDetail.setText("Detail")
         buttonDetail.clicked.connect(showDetailWindow)
 
         def showRateWindow():
-            file, idx = self.getSelectedFile()
-            win = RateWindow(file, idx)
+            file = self.getSelectedFile()
+            win = RateWindow(file)
             result = win.showModal()
             if result:
                 rate = win.currentRate
@@ -70,8 +75,8 @@ class MainWindow(QWidget):
         buttonRate.clicked.connect(showRateWindow)
 
         def showTagEditWindow():
-            file, idx = self.getSelectedFile()
-            win = TagWindow(file, idx)
+            file = self.getSelectedFile()
+            win = TagWindow(file)
             result = win.showModal()
             if result:
                 newIds, deletedIds = win.getResult()
