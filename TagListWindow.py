@@ -1,7 +1,7 @@
 import sys
 from PyQt5.QtWidgets import *
 from PyQt5.QtCore import *
-import DBInterface
+from DBInterface import *
 from nFile import *
 
 class TagListWindow(QDialog):
@@ -10,8 +10,7 @@ class TagListWindow(QDialog):
 
     def __init__(self):
         super().__init__()
-        self.conn, self.cur = DBInterface.establish()
-        self.tags = DBInterface.getTags(cur)
+        self.tags = DBInterface.instance().getTags()
         self.initUI()
 
     def setPositionToCenterOfScreen(self):
@@ -51,8 +50,8 @@ class TagListWindow(QDialog):
             result = win.showModal()
             if result:
                 name = win.Result.text()
-                DBInterface.addTag(cur, name)
-                self.tags = DBInterface.getTags(cur)
+                DBInterface.instance().addTag(name)
+                self.tags = DBInterface.instance().getTags()
                 self.loadTagsIntoListView()
 
         buttonNewTag = QPushButton("New Tag")
@@ -134,7 +133,6 @@ class SimpleInputWindow(QDialog):
         return super().exec_()
 
     def getResult(self):
-        DBInterface.distroy(self.conn)
         idx = self.getListIndex()
         if idx is None: return None
         return self.tags[idx]

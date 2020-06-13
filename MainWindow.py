@@ -1,7 +1,7 @@
 from PyQt5.QtWidgets import *
 from PyQt5.QtCore import *
 from PyQt5.QtGui import *
-import DBInterface
+from DBInterface import *
 from nFile import *
 from DialogWindows import *
 
@@ -9,11 +9,9 @@ class MainWindow(QWidget):
     wListView = None
 
     files = None
-    dbCur = None
 
-    def __init__(self, cur):
+    def __init__(self):
         super().__init__()
-        self.dbCur = cur
         self.initUI()
 
     def setPositionToCenterOfScreen(self):
@@ -24,7 +22,7 @@ class MainWindow(QWidget):
 
     # 서순: 반드시 initUIListView 호출 이후 호출되어야 함.
     def loadFilesFromDB(self, keyword=""):
-        self.files = DBInterface.getFiles(self.dbCur, keyword)
+        self.files = DBInterface.instance().getFiles(keyword)
         model = FileModel(self, self.files)
         self.wListView.setModel(model)
 
@@ -62,7 +60,7 @@ class MainWindow(QWidget):
             if result:
                 rate = win.currentRate
                 print(f"set rate to {rate}..")
-                DBInterface.setRate(self.dbCur, file.index, rate)
+                DBInterface.instance().setRate(file.index, rate)
 
         buttonRate = QPushButton()
         buttonRate.setText("Set Rate")
@@ -75,9 +73,9 @@ class MainWindow(QWidget):
             if result:
                 newIds, deletedIds = win.getResult()
                 for id in newIds:
-                    DBInterface.setTag(self.dbCur, file.index, id)
+                    DBInterface.instance().setTag(file.index, id)
                 for id in deletedIds:
-                    DBInterface.removeTag(self.dbCur, file.index, id)
+                    DBInterface.instance().removeTag(file.index, id)
 
         buttonTag = QPushButton()
         buttonTag.setText("Edit Tag")

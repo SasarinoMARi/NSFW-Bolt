@@ -1,14 +1,14 @@
 import sys
-import DBInterface
+from DBInterface import *
 from MainWindow import *
 from PyQt5.QtWidgets import QApplication 
     
 if __name__ == '__main__':
     app = QApplication(sys.argv)
-    conn, cur = DBInterface.establish()
-    ex = MainWindow(cur)
+    dbi = DBInterface.instance()
+    ex = MainWindow()
 
     app.exec_()
 
-    DBInterface.distroy(conn)
+    del dbi
     sys.exit()

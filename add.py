@@ -1,9 +1,6 @@
 import os
 import sys
-import dbInterface
-
-conn, c = dbInterface.establish()
-dbInterface.initializeTables(c)
+from DBInterface import *
 
 def addFile(path):
     if not os.path.exists(path):
@@ -20,7 +17,7 @@ def addFile(path):
             if len(sTemp[1]) >= 2:
                 extension = sTemp[1][1:]
 
-    dbInterface.addFile(c, {
+    DBInterface.instance().addFile({
         "name" : name,
         "filename" : name,
         "directory" : directory,
@@ -34,7 +31,5 @@ else:
     for i in range(len(sys.argv)-1):
         print(f"added [{i+1}/{len(sys.argv)-1}]")
         addFile(sys.argv[i+1])
-
-dbInterface.distroy(conn)
 
 input("작업이 완료되었습니다. 아무 키나 눌러주세요.")
