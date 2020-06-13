@@ -5,10 +5,9 @@ from PyQt5.QtWidgets import QApplication
     
 if __name__ == '__main__':
     app = QApplication(sys.argv)
-    dbi = DBInterface.instance()
     ex = MainWindow()
 
     app.exec_()
 
-    del dbi
+    DBInterface.distroy()
     sys.exit()

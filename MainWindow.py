@@ -7,6 +7,7 @@ from DialogWindows import *
 
 class MainWindow(QWidget):
     wListView = None
+    wSearchBar = None
 
     files = None
 
@@ -21,8 +22,9 @@ class MainWindow(QWidget):
         self.move(qr.topLeft())
 
     # 서순: 반드시 initUIListView 호출 이후 호출되어야 함.
-    def loadFilesFromDB(self, keyword=""):
-        self.files = DBInterface.instance().getFiles(keyword)
+    def loadFilesFromDB(self):
+        filter = self.wSearchBar.text() if not self.wSearchBar is None else ""
+        self.files = DBInterface.instance().getFiles(filter)
         model = FileModel(self, self.files)
         self.wListView.setModel(model)
 
@@ -61,6 +63,7 @@ class MainWindow(QWidget):
                 rate = win.currentRate
                 print(f"set rate to {rate}..")
                 DBInterface.instance().setRate(file.index, rate)
+                self.loadFilesFromDB()
 
         buttonRate = QPushButton()
         buttonRate.setText("Set Rate")
@@ -73,9 +76,10 @@ class MainWindow(QWidget):
             if result:
                 newIds, deletedIds = win.getResult()
                 for id in newIds:
-                    DBInterface.instance().setTag(file.index, id)
+                    DBInterface.instance().addTagFileTag(file.index, id)
                 for id in deletedIds:
-                    DBInterface.instance().removeTag(file.index, id)
+                    DBInterface.instance().removeFileTag(file.index, id)
+                self.loadFilesFromDB()
 
         buttonTag = QPushButton()
         buttonTag.setText("Edit Tag")
@@ -89,13 +93,13 @@ class MainWindow(QWidget):
         return layout
 
     def initUISearchBar(self):
-        wSearchBar = QLineEdit()
+        self.wSearchBar = QLineEdit()
 
         def searchTextChanged():
-            self.loadFilesFromDB(wSearchBar.text())
+            self.loadFilesFromDB()
             
-        wSearchBar.textChanged.connect(searchTextChanged)
-        return wSearchBar
+        self.wSearchBar.textChanged.connect(searchTextChanged)
+        return self.wSearchBar
 
     def inflateLayout(self):
         root = QHBoxLayout()

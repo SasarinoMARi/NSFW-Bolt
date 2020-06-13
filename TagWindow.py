@@ -11,14 +11,14 @@ class TagWindow(QDialog):
 
     wListView = None
 
-    newTagId = None
+    newTagIds = None
     deletedTagIds = None
 
     def __init__(self, file, listIdx):
         super().__init__()
         self.file = file
         self.listIdx = listIdx
-        self.newTagId = []
+        self.newTagIds = []
         self.deletedTagIds = []
         self.initUI()
 
@@ -36,7 +36,7 @@ class TagWindow(QDialog):
     def loadTagsIntoListView(self):
         model = QStandardItemModel()
         for tag in self.file.tags:
-            model.appendRow(QStandardItem(tag))
+            model.appendRow(QStandardItem(tag.name))
         self.wListView.setModel(model)
 
     def initUI(self):
@@ -66,9 +66,15 @@ class TagWindow(QDialog):
             result = win.showModal()
             if result:
                 tag = win.getResult()
-                if any(tag.name in s for s in self.file.tags): return
-                self.file.tags.append(tag.name)
-                self.newTagId.append(tag.id)
+                if tag is None: return
+                print(tag.name)
+                for i in self.file.tags: 
+                    if tag.index is i.index : 
+                        print(f'already added tag [{tag.name}]')
+                        return
+                self.file.tags.append(tag)
+                self.newTagIds.append(tag.index)
+                self.loadTagsIntoListView()
 
         buttonNewTag = QPushButton("New")
         buttonNewTag.clicked.connect(appendTag)
@@ -76,7 +82,8 @@ class TagWindow(QDialog):
         def removeTag():
             idx = self.getListIndex()
             if idx is None: return
-            self.file.tags.pop(idx)
+            tag = self.file.tags.pop(idx)
+            self.deletedTagIds.append(tag.index)
             self.loadTagsIntoListView()
 
         buttonDeleteTag = QPushButton("Delete")
@@ -104,7 +111,7 @@ class TagWindow(QDialog):
         self.setLayout(root)
 
     def getResult(self):
-        return self.newTagId, self.deletedTagIds
+        return self.newTagIds, self.deletedTagIds
 
     def showModal(self):
         return super().exec_()

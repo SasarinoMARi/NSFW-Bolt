@@ -95,7 +95,7 @@ class DBInterface(__SingletonInstane):
         
     # 등록된 파일 조회
     def getFiles(self, filter="") :
-        sql = f'''SELECT F.idx, F.name, F.filename, F."directory", F.isFolder, F.extension, F.thumbnail, R.rate, GROUP_CONCAT(Tag.name, ',') AS 'Tags' FROM Files AS F LEFT JOIN Tags AS T ON T.fidx is F.idx LEFT JOIN Tag ON T.tidx IS Tag.idx LEFT JOIN Rates AS R ON R.fidx is F.idx WHERE F.name LIKE '%{filter}%' GROUP BY F.idx'''
+        sql = f'''SELECT F.idx, F.name, F.filename, F."directory", F.isFolder, F.extension, F.thumbnail, R.rate, GROUP_CONCAT(Tag.name, ',') AS 'tagNames', GROUP_CONCAT(Tag.idx, ',') AS 'tagIds' FROM Files AS F LEFT JOIN Tags AS T ON T.fidx is F.idx LEFT JOIN Tag ON T.tidx IS Tag.idx LEFT JOIN Rates AS R ON R.fidx is F.idx WHERE F.name LIKE '%{filter}%' GROUP BY F.idx'''
         self.__printSqlLog(sql)
         result = self.connection.cursor().execute(sql)
 
@@ -142,6 +142,16 @@ class DBInterface(__SingletonInstane):
             tags.append(nTag.createWithRow(item))
         return tags
 
+    # 태그 이름으로 인덱스 조회
+    def getTag(self, name):
+        sql = f'''SELECT * FROM Tag WHERE name = '{name}' '''
+        self.__printSqlLog(sql)
+        result = self.connection.cursor().execute(sql)
+        
+        for item in result:
+            return item
+        return None
+
     # 태그 삭제
     def removeTag(self, name):
         sql = f'''DELETE FROM Tag WHERE name IS '{name}' '''
@@ -151,7 +161,7 @@ class DBInterface(__SingletonInstane):
 
 
     # 파일에 태그 추가
-    def setTagFileTag(self, id, tagId):
+    def addTagFileTag(self, id, tagId):
         sql = f'''INSERT INTO Tags(fidx, tidx) VALUES(
             '{id}','{tagId}')'''
         self.__printSqlLog(sql)
@@ -163,7 +173,7 @@ class DBInterface(__SingletonInstane):
         sql = f'''DELETE FROM Tags WHERE fidx IS '{id}' AND tidx IS '{tagId}' '''
         self.__printSqlLog(sql)
         result = self.connection.cursor().execute(sql)
-        print(f'Deleted tag {tagId} to [{id}]')
+        print(f'Deleted tag {tagId} from [{id}]')
 
         
     # 확장자 추가

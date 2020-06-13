@@ -49,7 +49,7 @@ class TagListWindow(QDialog):
             win = SimpleInputWindow("Enter new tag")
             result = win.showModal()
             if result:
-                name = win.Result.text()
+                name = win.getResult()
                 DBInterface.instance().addTag(name)
                 self.tags = DBInterface.instance().getTags()
                 self.loadTagsIntoListView()
@@ -88,6 +88,11 @@ class TagListWindow(QDialog):
 
     def showModal(self):
         return super().exec_()
+
+    def getResult(self):
+        idx = self.getListIndex()
+        if idx is None: return None
+        return self.tags[idx]
 
 
 class SimpleInputWindow(QDialog):
@@ -133,6 +138,4 @@ class SimpleInputWindow(QDialog):
         return super().exec_()
 
     def getResult(self):
-        idx = self.getListIndex()
-        if idx is None: return None
-        return self.tags[idx]
+        return self.Result.text()

@@ -1,3 +1,5 @@
+from nTag import *
+
 class nFile:
     index = None            # DB 내부 인덱스
     name = None             # 사용자 지정 이름
@@ -21,7 +23,17 @@ class nFile:
         instance.extension = row['extension']
         instance.thumbnail = row['thumbnail']
         instance.rate = row['rate']
-        instance.tags = str(row['tags']).split(',') if not row['tags'] is None else []
+
+        tagNames = str(row['tagNames']).split(',') if not row['tagNames'] is None else []
+        tagIndexes = str(row['tagIds']).split(',') if not row['tagIds'] is None else []
+        if len(tagNames) != len(tagIndexes):
+            print(f"[{row['idx']}] : Tag names and indexes is not matched.")
+            print(f"\tTag names : {row['tagNames']}")
+            print(f"\tTag indexes : {row['tagIds']}")
+            return None
+        instance.tags = []
+        for i in range(len(tagNames)):
+            instance.tags.append(nTag(tagIndexes[i], tagNames[i]))
         return instance
 
 from PyQt5.QtWidgets import *
