@@ -1,8 +1,5 @@
-리스트뷰 성능 향상 관련
-    https://stackoverflow.com/questions/53105343/is-it-possible-to-add-a-custom-widget-into-a-qlistview
-
-Size 힌트 어떻게 잘 줘서 메인 윈도우 크기 조절 잘 비비기
-
-db 백업
-
-Tag 및 Rate로 파일 검색하기
+workflow:
+    파일 목록에서 추가, 삭제, 랜덤 기능 추가
+    디렉터리 암복호화 기능 추가
+    MainWindow의 지저분한 UI코드 개선하기
+    db 백업 기능 추가
