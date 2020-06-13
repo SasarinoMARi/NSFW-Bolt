@@ -6,90 +6,36 @@ import dbInterface
 from nFile import *
 
 class MyApp(QWidget):
+    wListView = None
 
     files = None
-    search = None
-    listView = None
+    dbCur = None
 
-    def __init__(self):
+    def __init__(self, cur):
         super().__init__()
+        self.dbCur = cur
         self.initUI()
 
-    def center(self):
+    def setPositionToCenterOfScreen(self):
         qr = self.frameGeometry()
         cp = QDesktopWidget().availableGeometry().center()
         qr.moveCenter(cp)
         self.move(qr.topLeft())
 
-    def _makeGrid(self):
-        conn, c = dbInterface.establish()
-        files = dbInterface.getFiles(c)
+    # 서순: 반드시 initUIListView 호출 이후 호출되어야 함.
+    def loadFilesFromDB(self, keyword=""):
+        self.files = dbInterface.getFiles(self.dbCur, keyword)
+        model = FileModel(self, self.files)
+        self.wListView.setModel(model)
 
-        grid = QGridLayout()
+    def initUIListView(self):
+        self.wListView = QListView(self)
+        self.wListView.setItemDelegate(FileModelDelegate(self))
+        self.loadFilesFromDB()
 
-        for column in range(int(len(files)/3)):
-            for row in range(5):
-                if(column*3+row >= len(files)): continue
-                v = FileView(self)
-                v.setText(files[column*3+row].name)
-                grid.addWidget(v, column, row)
+        return self.wListView
 
-        content = QWidget()
-        content.setLayout(grid)
-
-        scrollView = QScrollArea()
-        scrollView.setWidget(content)
-
-        root = QHBoxLayout()
-        root.addWidget(scrollView)
-
-        self.setLayout(root)
-        dbInterface.distroy(conn)
-
-    def updateListContent(self, keyword=""):
-        conn, c = dbInterface.establish()
-        files = dbInterface.getFiles(c, keyword)
-        model = FileModel(self, files)
-        print(f"len:{len(files)}")
-        self.listView.setModel(model)
-
-        dbInterface.distroy(conn)
-
-    def makeList(self):
-        self.listView = QListView(self)
-        self.listView.setItemDelegate(FileModelDelegate(self))
-        self.updateListContent()
-
-        return self.listView
-
-    def _makeScroll(self):
-        conn, c = dbInterface.establish()
-        self.files = dbInterface.getFiles(c)
-
-        li = QVBoxLayout()
-        li.setContentsMargins(0, 0, 0, 0)
-  
-        for i in range(len(self.files)):
-            view = FileView(self, self.files[i])
-            # def onClick(self, e):
-                # self.selectedIdx = i
-                # print(f'selectedIdx : {self.selectedIdx}')
-            # view.mouseReleaseEvent(onClick)
-            li.addWidget(view)
-
-        content = QWidget()
-        content.setLayout(li)
-
-        scrollView = QScrollArea()
-        scrollView.setWidget(content)
-        scrollView.setMinimumSize(700, 400)
-        scrollView.setFixedWidth(700)
-
-        dbInterface.distroy(conn)
-
-        return scrollView
-    
-    def makeButton(self):
+    def initUIButtons(self):
         layout = QVBoxLayout()
         layout.setAlignment(Qt.AlignTop)
 
@@ -108,40 +54,42 @@ class MyApp(QWidget):
         layout.addWidget(buttonRate)
         layout.addWidget(buttonTag)
 
+        self.lButtons = layout
         return layout
 
+    def initUISearchBar(self):
+        wSearchBar = QLineEdit()
 
-    def searchTextChanged(self):
-        self.updateListContent(self.search.text())
+        def searchTextChanged(self):
+            self.loadFilesFromDB(wSearchBar.text())
+            
+        wSearchBar.textChanged.connect(searchTextChanged)
+        return wSearchBar
 
-    def makeSearch(self):
-        self.search = QLineEdit()
-        self.search.textChanged.connect(self.searchTextChanged)
-        return self.search
+    def inflateLayout(self):
+        root = QHBoxLayout()
+
+        layout1_1 = QVBoxLayout()
+        layout1_1.addWidget(self.initUISearchBar())
+        layout1_1.addWidget(self.initUIListView())
+
+        root.addLayout(layout1_1)
+        root.addLayout(self.initUIButtons())
+        return root
 
     def initUI(self):
         self.setWindowTitle('NSFW Bolt')
         self.resize(700, 600)
-        self.center()
-        root = QHBoxLayout()
-
-        layout1 = QVBoxLayout()
-
-        search = self.makeSearch()
-        layout1.addWidget(search)
-
-        li = self.makeList()
-        layout1.addWidget(li)
-
-        root.addLayout(layout1)
-
-        buttonView = self.makeButton()
-        root.addLayout(buttonView)
-        self.setLayout(root)
+        self.setPositionToCenterOfScreen()
+        self.setLayout(self.inflateLayout())
         self.show()
-
-
+    
 if __name__ == '__main__':
-   app = QApplication(sys.argv)
-   ex = MyApp()
-   sys.exit(app.exec_())
+    app = QApplication(sys.argv)
+    conn, cur = dbInterface.establish()
+    ex = MyApp(cur)
+
+    app.exec_()
+
+    dbInterface.distroy(conn)
+    sys.exit()

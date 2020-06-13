@@ -4,13 +4,17 @@ import datetime
 from collections import namedtuple
 
 def establish():
+    print("Establish connection with local Database...")
     conn = sqlite3.connect(__fn)
     conn.row_factory = sqlite3.Row
+    print("OK!")
     return conn, conn.cursor()
 
 def distroy(connection):
+    print("Commit Database and close connection...")
     connection.commit()
     connection.close()
+    print("OK!")
 
 def initializeTables(cursor):
     cursor.execute('''CREATE TABLE IF NOT EXISTS Files(

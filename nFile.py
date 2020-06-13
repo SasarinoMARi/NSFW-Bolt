@@ -81,19 +81,17 @@ class FileModelDelegate(QStyledItemDelegate):
 
     def messageBox(self, opt):
 	    font = QFont(opt.font)
-	    print(f"text:{opt.text}")
 
 	    return QFontMetrics(font).boundingRect(opt.text).adjusted(0, 0, 1, 1)
 
     def paint(self, painter, option, index):
         file = index.data()
-        print(f"type:{type(file)},cont:{file}")
         if not isinstance(file, nFile): 
             QStyledItemDelegate.paint(self, painter, option, index)
             return
 
 
-        print(f"file:{file.name}")
+        # print(f"file:{file.name}")
         opt = QStyleOptionViewItem(option)
         super(FileModelDelegate, self).initStyleOption(option, index)
 
