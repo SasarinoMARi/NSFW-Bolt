@@ -1,5 +1,6 @@
-import dbInterface
-conn, c = dbInterface.establish()
-files = dbInterface.getFiles(c)
+import DBInterface
+conn, c = DBInterface.establish()
+files = DBInterface.getFiles(c)
 for file in files:
     print(file.name)
+DBInterface.distroy(conn)

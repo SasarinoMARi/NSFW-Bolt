@@ -3,6 +3,14 @@ import sqlite3
 import datetime
 from collections import namedtuple
 
+def printSqlLog(sql):
+    sql = "\n\t" + sql.replace("\n", "").replace("  ", "")
+    sql = sql.replace("FROM", "\n\tFROM")
+    sql = sql.replace("WHERE", "\n\tWHERE")
+    sql = sql.replace("GROUP BY", "\n\tGROUP BY")
+    sql = sql.replace("ORDER BY", "\n\tORDER BY")
+    print(f'Query:{sql}')
+
 def establish():
     print("Establish connection with local Database...")
     conn = sqlite3.connect(__fn)
@@ -56,11 +64,13 @@ def addFile(cursor, data):
 
     sql = f'''INSERT INTO Files(name, filename, directory, isFolder, extension) VALUES(
         '{data['name']}','{data['name']}','{data['directory']}', {data['isFolder']}, {data['extension']})'''
+    printSqlLog(sql)
     result = cursor.execute(sql)
     
 from nFile import *
 def getFiles(cursor, filter="") :
     sql = f'''SELECT F.idx, F.name, F.filename, F."directory", F.isFolder, F.extension, F.thumbnail, R.rate, GROUP_CONCAT(Tag.name, ',') AS 'Tags' FROM Files AS F LEFT JOIN Tags AS T ON T.fidx is F.idx LEFT JOIN Tag ON T.tidx IS Tag.idx LEFT JOIN Rates AS R ON R.fidx is F.idx WHERE F.name LIKE '%{filter}%' GROUP BY F.idx'''
+    printSqlLog(sql)
     result = cursor.execute(sql)
 
     files = []
@@ -71,53 +81,61 @@ def getFiles(cursor, filter="") :
 
 # 별점 추가
 def setRate(cursor, id, rate):
+    removeRate(cursor, id)
+
     sql = f'''INSERT INTO Rates(fidx, rate) VALUES(
-        '{id}','{rate}')'''
+        '{id}',{rate})'''
+    printSqlLog(sql)
     result = cursor.execute(sql)
-    print(result)
+    print(f'Set rate of [{id}] to {rate}')
 
 # 별점 삭제
-def removeTag(cursor, id):
-    sql = f'''DELETE FROM Rates WHERE fidx IS '{id}')'''
+def removeRate(cursor, id):
+    sql = f'''DELETE FROM Rates WHERE fidx IS '{id}' '''
+    printSqlLog(sql)
     result = cursor.execute(sql)
-    print(result)
+    print(f'Delete rate of [{id}]')
     
 
 # 태그 추가
 def addTag(cursor, name):
     sql = f'''INSERT INTO Tag(name) VALUES(
         '{name}')'''
+    printSqlLog(sql)
     result = cursor.execute(sql)
-    print(result)
+    print(f'Tag [{name}] added. {result}')
 
 # 태그 삭제
 def removeTag(cursor, name):
-    sql = f'''DELETE FROM Tag WHERE name IS '{name}')'''
+    sql = f'''DELETE FROM Tag WHERE name IS '{name}' '''
+    printSqlLog(sql)
     result = cursor.execute(sql)
-    print(result)
+    print(f'Tag [{name}] deleted. {result}')
 
 
 # 파일에 태그 추가
 def setTag(cursor, id, tagId):
     sql = f'''INSERT INTO Tags(fidx, tidx) VALUES(
         '{id}','{tagId}')'''
+    printSqlLog(sql)
     result = cursor.execute(sql)
-    print(result)
+    print(f'Added tag {tagId} to [{id}]')
 
 # 파일에 태그 삭제
 def removeTag(cursor, id, tagId):
-    sql = f'''DELETE FROM Tags WHERE fidx IS '{id}' AND tidx IS '{tagId}'')'''
+    sql = f'''DELETE FROM Tags WHERE fidx IS '{id}' AND tidx IS '{tagId}' '''
+    printSqlLog(sql)
     result = cursor.execute(sql)
-    print(result)
+    print(f'Deleted tag {tagId} to [{id}]')
 
     
 # 확장자 추가
 def addExtensions(cursor, exetension, process):
     sql = f'''INSERT INTO Exetensions(exetension, process) VALUES(
         '{exetension}','{process}')'''
+    printSqlLog(sql)
     result = cursor.execute(sql)
-    print(result)
-    
+    print(f'extension {extension} added. {result}')
 
 # def show(cursor):
 #     sql = '''SELECT * FROM Files'''

@@ -1,13 +1,14 @@
 class nFile:
-    index = None
-    name = None
-    fileName = None
-    directory = None
-    isFolder = None
-    extension = None
-    thumbnail = None
-    rate = None
-    tags = None
+    index = None            # DB 내부 인덱스
+    name = None             # 사용자 지정 이름
+    fileName = None         # 실제 파일명
+    directory = None        # 소속 디렉토리
+    isFolder = None         # 폴더인지 여부
+    extension = None        # 확장자
+    thumbnail = None        # 섬네일
+    rate = None             # 별점
+    tags = None             # 태그
+    serialNumber = None     # 품번
 
     @staticmethod 
     def createWithRow(row):
