@@ -24,18 +24,18 @@ class MainWindow(QWidget):
 
     # 서순: 반드시 initUIListView 호출 이후 호출되어야 함.
     def loadFilesFromDB(self):
-        filter = self.wSearchBar.text() if not self.wSearchBar is None else ""
+        filter = self.wSearchBar.text().split(',') if not self.wSearchBar is None else []
         self.files = DBInterface.instance().getFiles(filter)
         model = FileModel(self, self.files)
         self.wListView.setModel(model)
 
-    # nFile 인스턴스와 list에서의 index 반환
+    
     def getSelectedFile(self):
         idxes = self.wListView.selectedIndexes()
         if len(idxes) == 0: return None
         item = self.files[idxes[0].row()]
         print(f'Selected File: {item.name}')
-        return item
+        return DBInterface.getFile(item.index) # 왜 이렇게 슬픈 코드가 되었는지는 DbInterface.getFiles 참고..
 
     def initUIListView(self):
         self.wListView = QListView(self)
@@ -53,8 +53,7 @@ class MainWindow(QWidget):
             path = os.path.realpath(os.path.join(file.directory, file.fileName))
             if file.extension != None and file.extension != 'None': path+=f'.{file.extension}'
             if os.path.exists(path): os.startfile(path)
-            else:
-                result = QMessageBox.critical(self, "Error", f"Cannot find File or Directory:\n\n{path}")
+            else: QMessageBox.critical(self, "Error", f"Cannot find File or Directory:\n\n{path}")
 
         buttonDetail = QPushButton()
         buttonDetail.setText("Detail")
@@ -104,6 +103,7 @@ class MainWindow(QWidget):
             self.loadFilesFromDB()
             
         self.wSearchBar.textChanged.connect(searchTextChanged)
+        self.wSearchBar.setPlaceholderText("Enter ketword.. (Separate with commas(,). tag:[Tag Name], rate:[Rate]")
         return self.wSearchBar
 
     def inflateLayout(self):

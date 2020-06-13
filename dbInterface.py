@@ -29,7 +29,7 @@ class DBInterface(__SingletonInstane):
         self.distroy()
 
     def __printSqlLog(self, sql):
-        sql = "\n\t" + sql.replace("\n", "").replace("  ", "")
+        sql = "\n\t" + sql.replace("\n", "")
         sql = sql.replace("FROM", "\n\tFROM")
         sql = sql.replace("WHERE", "\n\tWHERE")
         sql = sql.replace("GROUP BY", "\n\tGROUP BY")
@@ -51,37 +51,11 @@ class DBInterface(__SingletonInstane):
         print("OK!")
 
     def initializeTables(self):
-        self.connection.cursor().execute('''CREATE TABLE IF NOT EXISTS Files(
-                idx INTEGER PRIMARY KEY AUTOINCREMENT,
-                name TEXT NOT NULL,
-                filename TEXT NOT NULL,
-                directory TEXT NOT NULL,
-                isFolder BOOLEAN NOT NULL,
-                extension TEXT,
-                thumbnail TEXT)''')
-                
-        self.connection.cursor().execute('''CREATE TABLE IF NOT EXISTS Rates(
-                idx INTEGER PRIMARY KEY AUTOINCREMENT,
-                fidx INTEGER,
-                rate INTEGER NOT NULL,
-                
-                FOREIGN KEY(fidx) REFERENCES Files(idx))''')
-                
-        self.connection.cursor().execute('''CREATE TABLE IF NOT EXISTS Tag(
-                idx INTEGER PRIMARY KEY AUTOINCREMENT,
-                name TEXT NOT NULL)''')
-                
-        self.connection.cursor().execute('''CREATE TABLE IF NOT EXISTS Tags(
-                idx INTEGER PRIMARY KEY AUTOINCREMENT,
-                fidx INTEGER,
-                tidx INTEGER,
-                
-                FOREIGN KEY(fidx) REFERENCES Files(idx),
-                FOREIGN KEY(tidx) REFERENCES Tag(idx))''')
-                
-        self.connection.cursor().execute('''CREATE TABLE IF NOT EXISTS Exetensions(
-                exetension TEXT PRIMARY KEY,
-                process TEXT NOT NULL)''')
+        self.connection.cursor().execute('''CREATE TABLE IF NOT EXISTS Files(idx INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT NOT NULL, filename TEXT NOT NULL, directory TEXT NOT NULL, isFolder BOOLEAN NOT NULL, extension TEXT, thumbnail TEXT)''')
+        self.connection.cursor().execute('''CREATE TABLE IF NOT EXISTS Rates(idx INTEGER PRIMARY KEY AUTOINCREMENT, fidx INTEGER, rate INTEGER NOT NULL, FOREIGN KEY(fidx) REFERENCES Files(idx))''')
+        self.connection.cursor().execute('''CREATE TABLE IF NOT EXISTS Tag(idx INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT NOT NULL)''')
+        self.connection.cursor().execute('''CREATE TABLE IF NOT EXISTS Tags(idx INTEGER PRIMARY KEY AUTOINCREMENT, fidx INTEGER, tidx INTEGER, FOREIGN KEY(fidx) REFERENCES Files(idx), FOREIGN KEY(tidx) REFERENCES Tag(idx))''')
+        self.connection.cursor().execute('''CREATE TABLE IF NOT EXISTS Exetensions(exetension TEXT PRIMARY KEY, process TEXT NOT NULL)''')
 
     # 새 파일 추가
     def addFile(self, data):
@@ -93,9 +67,32 @@ class DBInterface(__SingletonInstane):
         self.__printSqlLog(sql)
         result = self.connection.cursor().execute(sql)
         
+    def getFile(self, idx):
+        sql = f'''SELECT F.idx, F.name, F.filename, F."directory", F.isFolder, F.extension, F.thumbnail, R.rate, GROUP_CONCAT(Tag.name, ',') AS 'tagNames', GROUP_CONCAT(Tag.idx, ',') AS 'tagIds' FROM Files AS F LEFT JOIN Tags AS T ON T.fidx is F.idx LEFT JOIN Tag ON T.tidx IS Tag.idx LEFT JOIN Rates AS R ON R.fidx is F.idx WHERE F.idx is {idx} GROUP BY F.idx '''
+        self.__printSqlLog(sql)
+        result = self.connection.cursor().execute(sql)
+        
+        for item in result:
+            return nFile.createWithRow(item)
+        return None
+
     # 등록된 파일 조회
-    def getFiles(self, filter="") :
-        sql = f'''SELECT F.idx, F.name, F.filename, F."directory", F.isFolder, F.extension, F.thumbnail, R.rate, GROUP_CONCAT(Tag.name, ',') AS 'tagNames', GROUP_CONCAT(Tag.idx, ',') AS 'tagIds' FROM Files AS F LEFT JOIN Tags AS T ON T.fidx is F.idx LEFT JOIN Tag ON T.tidx IS Tag.idx LEFT JOIN Rates AS R ON R.fidx is F.idx WHERE F.name LIKE '%{filter}%' GROUP BY F.idx'''
+    def getFiles(self, filters=[]) :
+        sql = f'''SELECT F.idx, F.name, F.filename, F."directory", F.isFolder, F.extension, F.thumbnail, R.rate, GROUP_CONCAT(Tag.name, ',') AS 'tagNames', GROUP_CONCAT(Tag.idx, ',') AS 'tagIds' FROM Files AS F LEFT JOIN Tags AS T ON T.fidx is F.idx LEFT JOIN Tag ON T.tidx IS Tag.idx LEFT JOIN Rates AS R ON R.fidx is F.idx'''
+        if len(filters) > 0: sql += ' ' + 'WHERE'
+        for i in range(len(filters)):
+            filter = filters[i].strip()
+            if len(filter) > 4 and filter.lower().startswith('tag:'): # 태그 필터
+                sql += ' ' + f''' Tag.name LIKE '%{filter[4:]}%' ''' # group_concat을 대상으로 where절 실행시 오류남.. ㅠ
+            elif len(filter) > 5 and filter.lower().startswith('rate:'): # 별점 필터
+                f = filter[5:6]
+                if not f.isdigit(): continue
+                sql += ' ' +  f''' R.rate > {f} '''
+            else : # 제목 필터
+                sql += ' ' + f''' F.name LIKE '%{filter}%' '''
+
+            if i+1 < len(filters): sql += ' ' + 'AND'
+        sql += ''' GROUP BY F.idx '''
         self.__printSqlLog(sql)
         result = self.connection.cursor().execute(sql)
 
