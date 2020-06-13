@@ -60,7 +60,8 @@ class TagListWindow(QDialog):
         def removeTag():
             idx = self.getListIndex()
             if idx is None: return
-            self.tags.pop(idx)
+            tag = self.tags.pop(idx)
+            DBInterface.instance().removeTag(tag.index)
             self.loadTagsIntoListView()
 
         buttonDeleteTag = QPushButton("Delete Tag")

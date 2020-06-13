@@ -153,7 +153,14 @@ class DBInterface(__SingletonInstane):
         return None
 
     # 태그 삭제
-    def removeTag(self, name):
+    def removeTag(self, id):
+        sql = f'''DELETE FROM Tag WHERE idx IS '{id}' '''
+        self.__printSqlLog(sql)
+        result = self.connection.cursor().execute(sql)
+        print(f'Tag [{id}] deleted. {result}')
+
+    # 태그 삭제
+    def removeTagWithName(self, name):
         sql = f'''DELETE FROM Tag WHERE name IS '{name}' '''
         self.__printSqlLog(sql)
         result = self.connection.cursor().execute(sql)
