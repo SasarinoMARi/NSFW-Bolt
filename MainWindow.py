@@ -3,7 +3,7 @@ from PyQt5.QtCore import *
 from PyQt5.QtGui import *
 import DBInterface
 from nFile import *
-from RateWindow import *
+from DialogWindows import *
 
 class MainWindow(QWidget):
     wListView = None
@@ -61,7 +61,7 @@ class MainWindow(QWidget):
             result = win.showModal()
             if result:
                 rate = win.currentRate
-                print(f"set rate to {rate}")
+                print(f"set rate to {rate}..")
                 DBInterface.setRate(self.dbCur, file.index, rate)
 
         buttonRate = QPushButton()
@@ -69,11 +69,19 @@ class MainWindow(QWidget):
         buttonRate.clicked.connect(showRateWindow)
 
         def showTagEditWindow():
-            pass
+            file, idx = self.getSelectedFile()
+            win = TagWindow(file, idx)
+            result = win.showModal()
+            if result:
+                newIds, deletedIds = win.getResult()
+                for id in newIds:
+                    DBInterface.setTag(self.dbCur, file.index, id)
+                for id in deletedIds:
+                    DBInterface.removeTag(self.dbCur, file.index, id)
 
         buttonTag = QPushButton()
         buttonTag.setText("Edit Tag")
-        buttonRate.clicked.connect(showTagEditWindow)
+        buttonTag.clicked.connect(showTagEditWindow)
 
         layout.addWidget(buttonDetail)
         layout.addWidget(buttonRate)

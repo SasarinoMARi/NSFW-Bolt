@@ -21,7 +21,7 @@ class nFile:
         instance.extension = row['extension']
         instance.thumbnail = row['thumbnail']
         instance.rate = row['rate']
-        instance.tags = str(row['tags']).split(',')
+        instance.tags = str(row['tags']).split(',') if not row['tags'] is None else []
         return instance
 
 from PyQt5.QtWidgets import *

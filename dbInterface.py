@@ -67,6 +67,7 @@ def addFile(cursor, data):
     printSqlLog(sql)
     result = cursor.execute(sql)
     
+# 등록된 파일 조회
 from nFile import *
 def getFiles(cursor, filter="") :
     sql = f'''SELECT F.idx, F.name, F.filename, F."directory", F.isFolder, F.extension, F.thumbnail, R.rate, GROUP_CONCAT(Tag.name, ',') AS 'Tags' FROM Files AS F LEFT JOIN Tags AS T ON T.fidx is F.idx LEFT JOIN Tag ON T.tidx IS Tag.idx LEFT JOIN Rates AS R ON R.fidx is F.idx WHERE F.name LIKE '%{filter}%' GROUP BY F.idx'''
@@ -105,6 +106,18 @@ def addTag(cursor, name):
     result = cursor.execute(sql)
     print(f'Tag [{name}] added. {result}')
 
+# 태그 조회
+from nTag import *
+def getTags(cursor):
+    sql = f'''SELECT * FROM Tag'''
+    printSqlLog(sql)
+    result = cursor.execute(sql)
+
+    tags = []
+    for item in result:
+        tags.append(nTag.createWithRow(item))
+    return tags
+
 # 태그 삭제
 def removeTag(cursor, name):
     sql = f'''DELETE FROM Tag WHERE name IS '{name}' '''
@@ -135,7 +148,7 @@ def addExtensions(cursor, exetension, process):
         '{exetension}','{process}')'''
     printSqlLog(sql)
     result = cursor.execute(sql)
-    print(f'extension {extension} added. {result}')
+    print(f'extension {exetension} added. {result}')
 
 # def show(cursor):
 #     sql = '''SELECT * FROM Files'''
