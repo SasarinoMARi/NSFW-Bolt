@@ -1,6 +1,4 @@
 workflow:
     디렉터리 암복호화 기능 추가
-    MainWindow의 지저분한 UI코드 개선하기
-    db 백업 기능 추가
     파일 삭제시 연결된 rate와 tags도 삭제
     중복 검사

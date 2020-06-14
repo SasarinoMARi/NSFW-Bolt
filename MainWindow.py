@@ -49,6 +49,8 @@ class MainWindow(QWidget):
     def initUIListView(self):
         self.wListView = QListView(self)
         self.wListView.setItemDelegate(FileModelDelegate(self))
+        self.wListView.setMinimumWidth(400)
+        self.wListView.setMinimumHeight(200)
         self.loadFilesFromDB()
 
         return self.wListView
