@@ -65,6 +65,7 @@ class MainWindow(QWidget):
 
         def showDetailWindow():
             file = self.getSelectedFile()
+            if file is None: return
             path = os.path.realpath(os.path.join(file.directory, file.fileName))
             if file.extension != None and file.extension != 'None': path+=f'.{file.extension}'
             if os.path.exists(path): os.startfile(path)
@@ -77,6 +78,7 @@ class MainWindow(QWidget):
 
         def showRateWindow():
             file = self.getSelectedFile()
+            if file is None: return
             win = RateWindow(file)
             result = win.showModal()
             if result:
@@ -92,6 +94,7 @@ class MainWindow(QWidget):
 
         def showTagEditWindow():
             file = self.getSelectedFile()
+            if file is None: return
             win = TagWindow(file)
             result = win.showModal()
             if result:
@@ -106,6 +109,20 @@ class MainWindow(QWidget):
         buttonTag.setText("Edit Tag")
         buttonTag.setFixedHeight(40)
         buttonTag.clicked.connect(showTagEditWindow)
+        buttonRate.clicked.connect(showRateWindow)
+
+        def onRenameButtonClick():
+            file = self.getSelectedFile()
+            if file is None: return
+            text, ok = QInputDialog.getText(self, 'Rename', 'Enter new name..', text=file.name)
+            if ok and len(text) > 0:
+                DBInterface.instance().setFileName(file.index, text)
+                self.loadFilesFromDB()
+
+        buttonRen = QPushButton()
+        buttonRen.setText("Rename")
+        buttonRen.setFixedHeight(40)
+        buttonRen.clicked.connect(onRenameButtonClick)
 
 
         def onRandomButtonClick():
@@ -134,6 +151,7 @@ class MainWindow(QWidget):
 
         def onDeleteButtonClick():
             file = self.getSelectedFile()
+            if file is None: return
             result = QMessageBox.question(self, "Confirm", f"Delete file from NSFW-Bolt?\nReal file is does not delete.\n\n{file.name}", QMessageBox.Yes | QMessageBox.No, QMessageBox.No)
             if result == QMessageBox.Yes:
                 DBInterface.instance().deleteFile(file.index)
@@ -148,6 +166,7 @@ class MainWindow(QWidget):
         layout.addWidget(buttonDetail)
         layout.addWidget(buttonRate)
         layout.addWidget(buttonTag)
+        layout.addWidget(buttonRen)
         layout.addSpacing(20)
         layout.addWidget(buttonRandom)
         layout.addSpacing(20)

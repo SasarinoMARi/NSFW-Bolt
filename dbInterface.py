@@ -51,10 +51,11 @@ class DBInterface(__SingletonInstane):
         print("OK!")
 
     def initializeTables(self):
+        # Cascade 연쇄삭제 왜 안되는지 아는사람? ㅠㅠ 솔직히 냅둬도 상관없으니까 못본체하겠음
         self.connection.cursor().execute('''CREATE TABLE IF NOT EXISTS Files(idx INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT NOT NULL, filename TEXT NOT NULL, directory TEXT NOT NULL, isFolder BOOLEAN NOT NULL, extension TEXT, thumbnail TEXT)''')
-        self.connection.cursor().execute('''CREATE TABLE IF NOT EXISTS Rates(idx INTEGER PRIMARY KEY AUTOINCREMENT, fidx INTEGER, rate INTEGER NOT NULL, FOREIGN KEY(fidx) REFERENCES Files(idx))''')
+        self.connection.cursor().execute('''CREATE TABLE IF NOT EXISTS Rates(idx INTEGER PRIMARY KEY AUTOINCREMENT, fidx INTEGER, rate INTEGER NOT NULL, FOREIGN KEY(fidx) REFERENCES Files(idx) ON DELETE CASCADE)''')
         self.connection.cursor().execute('''CREATE TABLE IF NOT EXISTS Tag(idx INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT NOT NULL)''')
-        self.connection.cursor().execute('''CREATE TABLE IF NOT EXISTS Tags(idx INTEGER PRIMARY KEY AUTOINCREMENT, fidx INTEGER, tidx INTEGER, FOREIGN KEY(fidx) REFERENCES Files(idx), FOREIGN KEY(tidx) REFERENCES Tag(idx))''')
+        self.connection.cursor().execute('''CREATE TABLE IF NOT EXISTS Tags(idx INTEGER PRIMARY KEY AUTOINCREMENT, fidx INTEGER, tidx INTEGER, FOREIGN KEY(fidx) REFERENCES Files(idx) ON DELETE CASCADE, FOREIGN KEY(tidx) REFERENCES Tag(idx) ON DELETE CASCADE)''')
         self.connection.cursor().execute('''CREATE TABLE IF NOT EXISTS Exetensions(exetension TEXT PRIMARY KEY, process TEXT NOT NULL)''')
 
     # 새 파일 추가
@@ -102,6 +103,12 @@ class DBInterface(__SingletonInstane):
             f = nFile.createWithRow(item)
             files.append(f)
         return files
+
+    def setFileName(self, idx, name):
+        sql = f'''UPDATE Files SET name = '{name}' WHERE idx IS {idx}'''
+        self.__printSqlLog(sql)
+        result = self.connection.cursor().execute(sql)
+        print(f'File [{idx}] name was changed to {name}.')
 
     def deleteFile(self, fidx):
         sql = f'''DELETE FROM files WHERE idx is {fidx}'''
