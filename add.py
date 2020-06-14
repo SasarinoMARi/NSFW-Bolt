@@ -25,11 +25,11 @@ def addFile(path):
         "extension" : extension
     })
 
-if len(sys.argv) <= 1:
-    pass
-else:
-    for i in range(len(sys.argv)-1):
-        print(f"added [{i+1}/{len(sys.argv)-1}]")
-        addFile(sys.argv[i+1])
 
-input("작업이 완료되었습니다. 아무 키나 눌러주세요.")
+if __name__ == '__main__':
+    if len(sys.argv) <= 1:
+        pass
+    else:
+        for i in range(len(sys.argv)-1):
+            print(f"added [{i+1}/{len(sys.argv)-1}]")
+            addFile(sys.argv[i+1])

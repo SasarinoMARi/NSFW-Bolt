@@ -67,6 +67,7 @@ class DBInterface(__SingletonInstane):
         self.__printSqlLog(sql)
         result = self.connection.cursor().execute(sql)
         
+    #  인덱스로 파일 조회
     def getFile(self, idx):
         sql = f'''SELECT F.idx, F.name, F.filename, F."directory", F.isFolder, F.extension, F.thumbnail, R.rate, GROUP_CONCAT(Tag.name, ',') AS 'tagNames', GROUP_CONCAT(Tag.idx, ',') AS 'tagIds' FROM Files AS F LEFT JOIN Tags AS T ON T.fidx is F.idx LEFT JOIN Tag ON T.tidx IS Tag.idx LEFT JOIN Rates AS R ON R.fidx is F.idx WHERE F.idx is {idx} GROUP BY F.idx '''
         self.__printSqlLog(sql)
@@ -101,6 +102,12 @@ class DBInterface(__SingletonInstane):
             f = nFile.createWithRow(item)
             files.append(f)
         return files
+
+    def deleteFile(self, fidx):
+        sql = f'''DELETE FROM files WHERE idx is {fidx}'''
+        self.__printSqlLog(sql)
+        result = self.connection.cursor().execute(sql)
+        print(f'File [{fidx}] was deleted.')
 
     # 별점 추가
     def setRate(self, id, rate):
