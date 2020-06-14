@@ -24,16 +24,22 @@ class MainWindow(QWidget):
 
     # 서순: 반드시 initUIListView 호출 이후 호출되어야 함.
     def loadFilesFromDB(self):
+        index = self.getSelectedFileIndex()
         filter = self.wSearchBar.text().split(',') if not self.wSearchBar is None else []
         self.files = DBInterface.instance().getFiles(filter)
-        model = FileModel(self, self.files)
-        self.wListView.setModel(model)
+        self.model = FileModel(self, self.files)
+        self.wListView.setModel(self.model)
+        if index != None: self.selectItem(index)
 
-    
-    def getSelectedFile(self):
+    def getSelectedFileIndex(self):
         idxes = self.wListView.selectedIndexes()
         if len(idxes) == 0: return None
-        item = self.files[idxes[0].row()]
+        return idxes[0].row()
+
+    def getSelectedFile(self):
+        idx = self.getSelectedFileIndex()
+        if idx is None: return None
+        item = self.files[idx]
         print(f'Selected File: {item.name}')
         return DBInterface.getFile(item.index) # 왜 이렇게 슬픈 코드가 되었는지는 DbInterface.getFiles 참고..
 
@@ -43,6 +49,10 @@ class MainWindow(QWidget):
         self.loadFilesFromDB()
 
         return self.wListView
+
+    def selectItem(self, index):
+        index = self.model.index(index)
+        self.wListView.setCurrentIndex(index)
 
     def initUIButtons(self):
         layout = QVBoxLayout()
@@ -93,7 +103,6 @@ class MainWindow(QWidget):
         layout.addWidget(buttonRate)
         layout.addWidget(buttonTag)
 
-        self.lButtons = layout
         return layout
 
     def initUISearchBar(self):
