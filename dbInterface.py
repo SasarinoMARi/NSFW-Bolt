@@ -79,7 +79,7 @@ class DBInterface(__SingletonInstane):
         return None
 
     # 등록된 파일 조회
-    def getFiles(self, filters=[]) :
+    def getFiles(self, filters=[], operator="AND") :
         sql = f'''SELECT F.idx, F.name, F.filename, F."directory", F.isFolder, F.extension, F.thumbnail, F.serialNumber, F.hash, R.rate, GROUP_CONCAT(Tag.name, ',') AS 'tagNames', GROUP_CONCAT(Tag.idx, ',') AS 'tagIds' FROM Files AS F LEFT JOIN Tags AS T ON T.fidx is F.idx LEFT JOIN Tag ON T.tidx IS Tag.idx LEFT JOIN Rates AS R ON R.fidx is F.idx'''
         if len(filters) > 0: sql += ' ' + 'WHERE'
         for i in range(len(filters)):
@@ -89,11 +89,13 @@ class DBInterface(__SingletonInstane):
             elif len(filter) > 5 and filter.lower().startswith('rate:'): # 별점 필터
                 f = filter[5:6]
                 if not f.isdigit(): continue
-                sql += ' ' +  f''' R.rate > {f} '''
+                sql += ' ' +  f''' R.rate >= {f} '''
+            elif len(filter) > 10 and filter.lower().startswith('extension:'): # 별점 필터
+                sql += ' ' + f''' F.extension LIKE '%{filter[10:]}%' ''' # group_concat을 대상으로 where절 실행시 오류남.. ㅠ
             else : # 제목 필터
                 sql += ' ' + f''' F.name LIKE '%{filter}%' '''
 
-            if i+1 < len(filters): sql += ' ' + 'AND'
+            if i+1 < len(filters): sql += ' ' + operator
         sql += ''' GROUP BY F.idx ORDER BY F.name'''
         self.__printSqlLog(sql)
         result = self.connection.cursor().execute(sql)

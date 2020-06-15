@@ -30,7 +30,15 @@ class MainWindow(QWidget):
     def loadFilesFromDB(self):
         index = self.getSelectedFileIndex()
         filter = self.wSearchBar.text().split(',') if not self.wSearchBar is None else []
-        self.files = DBInterface.instance().getFiles(filter)
+
+        # 검색 연산자 계산
+        if self.wSearchOptionAnd.isChecked() : operator = "AND"
+        elif self.wSearchOptionOr.isChecked() : operator = "OR"
+        else: operator = "AND"
+
+        print(operator)
+
+        self.files = DBInterface.instance().getFiles(filter, operator)
         self.model = FileModel(self, self.files)
         self.wListView.setModel(self.model)
         if index != None: self.selectItem(index)
@@ -220,20 +228,44 @@ class MainWindow(QWidget):
         return layout
 
     def initUISearchBar(self):
+        layout = QVBoxLayout()
         self.wSearchBar = QLineEdit()
 
         def searchTextChanged():
             self.loadFilesFromDB()
             
         self.wSearchBar.textChanged.connect(searchTextChanged)
-        self.wSearchBar.setPlaceholderText("Enter ketword.. (Separate with commas(,). tag:[Tag Name], rate:[Rate]")
-        return self.wSearchBar
+        self.wSearchBar.setPlaceholderText("Enter ketword.. (Separate with commas(,). can use tag:[tag name], rate:[1~5], ext:[extension name]")
+
+        layout1_1 = QHBoxLayout()
+        layout1_1.setAlignment(Qt.AlignLeft)
+
+        label = QLabel()
+        label.setText("Search operator : ")
+
+        self.wSearchOptionAnd = QRadioButton()
+        self.wSearchOptionAnd.setText("AND")
+        self.wSearchOptionAnd.setChecked(True)
+        self.wSearchOptionAnd.clicked.connect(self.loadFilesFromDB)
+
+        self.wSearchOptionOr = QRadioButton()
+        self.wSearchOptionOr.setText("OR")
+        self.wSearchOptionOr.clicked.connect(self.loadFilesFromDB)
+        
+        
+        layout1_1.addWidget(label)
+        layout1_1.addWidget(self.wSearchOptionAnd)
+        layout1_1.addWidget(self.wSearchOptionOr)
+
+        layout.addWidget(self.wSearchBar)
+        layout.addLayout(layout1_1)
+        return layout
 
     def inflateLayout(self):
         root = QHBoxLayout()
 
         layout1_1 = QVBoxLayout()
-        layout1_1.addWidget(self.initUISearchBar())
+        layout1_1.addLayout(self.initUISearchBar())
         layout1_1.addWidget(self.initUIListView())
 
         root.addLayout(layout1_1)
