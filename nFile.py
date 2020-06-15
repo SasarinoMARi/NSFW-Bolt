@@ -11,6 +11,7 @@ class nFile:
     rate = None             # 별점
     tags = None             # 태그
     serialNumber = None     # 품번
+    hash = None             # 해시
 
     @staticmethod 
     def createWithRow(row):
@@ -23,6 +24,8 @@ class nFile:
         instance.extension = row['extension']
         instance.thumbnail = row['thumbnail']
         instance.rate = row['rate']
+        instance.serialNumber = row['serialNumber']
+        instance.hash = row['hash']
 
         tagNames = str(row['tagNames']).split(',') if not row['tagNames'] is None else []
         tagIndexes = str(row['tagIds']).split(',') if not row['tagIds'] is None else []
@@ -35,6 +38,9 @@ class nFile:
         for i in range(len(tagNames)):
             instance.tags.append(nTag(tagIndexes[i], tagNames[i]))
         return instance
+
+    def __str__(self):
+        return f"[{self.index}] {self.name}\n\t{self.directory}/{self.fileName} (ext: {self.extension})\n\tHash: {self.hash}"
 
 from PyQt5.QtWidgets import *
 from PyQt5.QtCore import *

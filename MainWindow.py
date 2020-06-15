@@ -61,7 +61,7 @@ class MainWindow(QWidget):
         self.wListView.setCurrentIndex(index)
 
     def getFilePath(self, file):
-        path = os.path.join(file.directory, file.name) 
+        path = os.path.join(file.directory, file.fileName) 
         if file.extension != None and file.extension != 'None': path+=f'.{file.extension}'
         return path
 
@@ -69,7 +69,7 @@ class MainWindow(QWidget):
         layout = QVBoxLayout()
         layout.setAlignment(Qt.AlignTop)
 
-        def showDetailWindow():
+        def openFile():
             file = self.getSelectedFile()
             if file is None: return
             path = self.getFilePath(file)
@@ -78,10 +78,24 @@ class MainWindow(QWidget):
             if os.path.exists(path): os.startfile(path)
             else: QMessageBox.critical(self, "Error", f"Cannot find File or Directory:\n\n{path}")
 
-        buttonDetail = QPushButton()
-        buttonDetail.setText("Open")
-        buttonDetail.setFixedHeight(40)
-        buttonDetail.clicked.connect(showDetailWindow)
+        buttonOpen = QPushButton()
+        buttonOpen.setText("Open")
+        buttonOpen.setFixedHeight(40)
+        buttonOpen.clicked.connect(openFile)
+        self.wListView.doubleClicked.connect(openFile)
+
+        def openDirectory():
+            file = self.getSelectedFile()
+            if file is None: return
+            
+            path = file.directory if not file.isFolder else os.path.join(file.directory, file.fileName) 
+            if os.path.exists(path): os.startfile(path)
+            else: QMessageBox.critical(self, "Error", f"Cannot find File or Directory:\n\n{path}")
+
+        buttonOpenPath = QPushButton()
+        buttonOpenPath.setText("Open\nDirectory")
+        buttonOpenPath.setFixedHeight(40)
+        buttonOpenPath.clicked.connect(openDirectory)
 
         def showRateWindow():
             file = self.getSelectedFile()
@@ -116,7 +130,6 @@ class MainWindow(QWidget):
         buttonTag.setText("Edit Tag")
         buttonTag.setFixedHeight(40)
         buttonTag.clicked.connect(showTagEditWindow)
-        buttonRate.clicked.connect(showRateWindow)
 
         def onRenameButtonClick():
             file = self.getSelectedFile()
@@ -177,6 +190,7 @@ class MainWindow(QWidget):
             result = QMessageBox.question(self, "Confirm", f"Delete file from NSFW-Bolt?\n\n{file.name}", QMessageBox.Yes | QMessageBox.No, QMessageBox.No)
             if result == QMessageBox.Yes:
                 path = self.getFilePath(file)
+                print(path)
                 if os.path.isfile(path):
                     os.remove(path)
                 elif os.path.isdir(path):
@@ -191,7 +205,8 @@ class MainWindow(QWidget):
         buttonRemove.clicked.connect(onRemoveButtonClick)
 
 
-        layout.addWidget(buttonDetail)
+        layout.addWidget(buttonOpen)
+        layout.addWidget(buttonOpenPath)
         layout.addWidget(buttonRate)
         layout.addWidget(buttonTag)
         layout.addWidget(buttonRen)

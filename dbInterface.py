@@ -52,7 +52,7 @@ class DBInterface(__SingletonInstane):
 
     def initializeTables(self):
         # Cascade 연쇄삭제 왜 안되는지 아는사람? ㅠㅠ 솔직히 냅둬도 상관없으니까 못본체하겠음
-        self.connection.cursor().execute('''CREATE TABLE IF NOT EXISTS Files(idx INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT NOT NULL, filename TEXT NOT NULL, directory TEXT NOT NULL, isFolder BOOLEAN NOT NULL, extension TEXT, thumbnail TEXT)''')
+        self.connection.cursor().execute('''CREATE TABLE IF NOT EXISTS Files(idx INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT NOT NULL, filename TEXT NOT NULL, directory TEXT NOT NULL, isFolder BOOLEAN NOT NULL, extension TEXT, thumbnail TEXT, hash TEXT, serialNumber TEXT)''')
         self.connection.cursor().execute('''CREATE TABLE IF NOT EXISTS Rates(idx INTEGER PRIMARY KEY AUTOINCREMENT, fidx INTEGER, rate INTEGER NOT NULL, FOREIGN KEY(fidx) REFERENCES Files(idx) ON DELETE CASCADE)''')
         self.connection.cursor().execute('''CREATE TABLE IF NOT EXISTS Tag(idx INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT NOT NULL)''')
         self.connection.cursor().execute('''CREATE TABLE IF NOT EXISTS Tags(idx INTEGER PRIMARY KEY AUTOINCREMENT, fidx INTEGER, tidx INTEGER, FOREIGN KEY(fidx) REFERENCES Files(idx) ON DELETE CASCADE, FOREIGN KEY(tidx) REFERENCES Tag(idx) ON DELETE CASCADE)''')
@@ -70,7 +70,7 @@ class DBInterface(__SingletonInstane):
         
     #  인덱스로 파일 조회
     def getFile(self, idx):
-        sql = f'''SELECT F.idx, F.name, F.filename, F."directory", F.isFolder, F.extension, F.thumbnail, R.rate, GROUP_CONCAT(Tag.name, ',') AS 'tagNames', GROUP_CONCAT(Tag.idx, ',') AS 'tagIds' FROM Files AS F LEFT JOIN Tags AS T ON T.fidx is F.idx LEFT JOIN Tag ON T.tidx IS Tag.idx LEFT JOIN Rates AS R ON R.fidx is F.idx WHERE F.idx is {idx} GROUP BY F.idx '''
+        sql = f'''SELECT F.idx, F.name, F.filename, F."directory", F.isFolder, F.extension, F.thumbnail, F.serialNumber, F.hash, R.rate, GROUP_CONCAT(Tag.name, ',') AS 'tagNames', GROUP_CONCAT(Tag.idx, ',') AS 'tagIds' FROM Files AS F LEFT JOIN Tags AS T ON T.fidx is F.idx LEFT JOIN Tag ON T.tidx IS Tag.idx LEFT JOIN Rates AS R ON R.fidx is F.idx WHERE F.idx is {idx} GROUP BY F.idx '''
         self.__printSqlLog(sql)
         result = self.connection.cursor().execute(sql)
         
@@ -80,7 +80,7 @@ class DBInterface(__SingletonInstane):
 
     # 등록된 파일 조회
     def getFiles(self, filters=[]) :
-        sql = f'''SELECT F.idx, F.name, F.filename, F."directory", F.isFolder, F.extension, F.thumbnail, R.rate, GROUP_CONCAT(Tag.name, ',') AS 'tagNames', GROUP_CONCAT(Tag.idx, ',') AS 'tagIds' FROM Files AS F LEFT JOIN Tags AS T ON T.fidx is F.idx LEFT JOIN Tag ON T.tidx IS Tag.idx LEFT JOIN Rates AS R ON R.fidx is F.idx'''
+        sql = f'''SELECT F.idx, F.name, F.filename, F."directory", F.isFolder, F.extension, F.thumbnail, F.serialNumber, F.hash, R.rate, GROUP_CONCAT(Tag.name, ',') AS 'tagNames', GROUP_CONCAT(Tag.idx, ',') AS 'tagIds' FROM Files AS F LEFT JOIN Tags AS T ON T.fidx is F.idx LEFT JOIN Tag ON T.tidx IS Tag.idx LEFT JOIN Rates AS R ON R.fidx is F.idx'''
         if len(filters) > 0: sql += ' ' + 'WHERE'
         for i in range(len(filters)):
             filter = filters[i].strip()
@@ -94,7 +94,7 @@ class DBInterface(__SingletonInstane):
                 sql += ' ' + f''' F.name LIKE '%{filter}%' '''
 
             if i+1 < len(filters): sql += ' ' + 'AND'
-        sql += ''' GROUP BY F.idx '''
+        sql += ''' GROUP BY F.idx ORDER BY F.name'''
         self.__printSqlLog(sql)
         result = self.connection.cursor().execute(sql)
 
