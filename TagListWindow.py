@@ -18,11 +18,6 @@ class TagListWindow(QDialog):
         cp = QDesktopWidget().availableGeometry().center()
         qr.moveCenter(cp)
         self.move(qr.topLeft())
-
-    def getListIndex(self):
-        idxes = self.wListView.selectedIndexes()
-        if len(idxes) == 0: return None
-        return idxes[0].row()
     
     def loadTagsIntoListView(self):
         model = QStandardItemModel()
@@ -32,14 +27,14 @@ class TagListWindow(QDialog):
 
     def initUI(self):
         self.setWindowTitle('Edit Tag')
-        self.setGeometry(100, 100, 200, 200)
+        self.setGeometry(100, 100, 300, 400)
         self.setPositionToCenterOfScreen()
 
         root = QVBoxLayout()
-        root.addStretch(1)
 
         layout1 = QHBoxLayout()
         self.wListView = QListView()
+        self.wListView.setSelectionMode( QAbstractItemView.ExtendedSelection )
         self.loadTagsIntoListView()
 
         layout1_1 = QVBoxLayout()
@@ -84,16 +79,16 @@ class TagListWindow(QDialog):
 
         root.addLayout(layout1)
         root.addLayout(layout2)
-        root.addStretch(1)
         self.setLayout(root)
 
     def showModal(self):
         return super().exec_()
 
     def getResult(self):
-        idx = self.getListIndex()
-        if idx is None: return None
-        return self.tags[idx]
+        tags = []
+        for idx in self.wListView.selectedIndexes():
+            tags.append(self.tags[idx.row()])
+        return tags
 
 
 class SimpleInputWindow(QDialog):

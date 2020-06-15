@@ -38,12 +38,11 @@ class TagWindow(QDialog):
         self.wListView.setModel(model)
 
     def initUI(self):
-        self.setWindowTitle('Set Rate')
-        self.setGeometry(100, 100, 200, 100)
+        self.setWindowTitle('Edit Tag')
+        self.setGeometry(100, 100, 200, 400)
         self.setPositionToCenterOfScreen()
 
         root = QVBoxLayout()
-        root.addStretch(1)
 
         title = QLabel()
         title.setText(self.file.name)
@@ -58,21 +57,22 @@ class TagWindow(QDialog):
         self.loadTagsIntoListView()
 
         layout1_1 = QVBoxLayout()
+        layout1_1.setAlignment(Qt.AlignTop)
 
         def appendTag():
             win = TagListWindow()
             result = win.showModal()
             if result:
-                tag = win.getResult()
-                if tag is None: return
-                print(tag.name)
-                for i in self.file.tags: 
-                    if tag.index is i.index : 
-                        print(f'already added tag [{tag.name}]')
-                        return
-                self.file.tags.append(tag)
-                self.newTagIds.append(tag.index)
-                self.loadTagsIntoListView()
+                tags = win.getResult()
+                if tags is None: return
+                for tag in tags:
+                    for i in self.file.tags: 
+                        if tag.index is i.index : 
+                            print(f'already added tag [{tag.name}]')
+                            return
+                    self.file.tags.append(tag)
+                    self.newTagIds.append(tag.index)
+                    self.loadTagsIntoListView()
 
         buttonNewTag = QPushButton("New")
         buttonNewTag.clicked.connect(appendTag)
@@ -105,7 +105,6 @@ class TagWindow(QDialog):
         root.addWidget(title)
         root.addLayout(layout1)
         root.addLayout(layout2)
-        root.addStretch(1)
         self.setLayout(root)
 
     def getResult(self):
