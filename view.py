@@ -9,5 +9,5 @@ if __name__ == '__main__':
     ex = MainWindow()
     app.exec_()
     shutil.copy('bolt.db', 'bolt.db.bak') # Commit 전 복사
-    DBInterface.distroy()
+    # DBInterface.distroy()
     sys.exit()
