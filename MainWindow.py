@@ -66,7 +66,8 @@ class MainWindow(QWidget):
         def showDetailWindow():
             file = self.getSelectedFile()
             if file is None: return
-            path = os.path.realpath(os.path.join(file.directory, file.fileName))
+            # path = os.path.realpath(os.path.join(file.directory, file.fileName))
+            path = os.path.join(file.directory, file.name) 
             if file.extension != None and file.extension != 'None': path+=f'.{file.extension}'
             if os.path.exists(path): os.startfile(path)
             else: QMessageBox.critical(self, "Error", f"Cannot find File or Directory:\n\n{path}")
@@ -126,7 +127,9 @@ class MainWindow(QWidget):
 
 
         def onRandomButtonClick():
-            index = random.randrange(len(self.files))
+            length = len(self.files)
+            if length is 0 : return
+            index = random.randrange(length)
             self.selectItem(index)
 
         buttonRandom = QPushButton()
