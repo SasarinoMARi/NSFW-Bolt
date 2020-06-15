@@ -1,5 +1,6 @@
 import os
 import random
+import shutil
 from PyQt5.QtWidgets import *
 from PyQt5.QtCore import *
 from PyQt5.QtGui import *
@@ -59,6 +60,11 @@ class MainWindow(QWidget):
         index = self.model.index(index)
         self.wListView.setCurrentIndex(index)
 
+    def getFilePath(self, file):
+        path = os.path.join(file.directory, file.name) 
+        if file.extension != None and file.extension != 'None': path+=f'.{file.extension}'
+        return path
+
     def initUIButtons(self):
         layout = QVBoxLayout()
         layout.setAlignment(Qt.AlignTop)
@@ -66,9 +72,7 @@ class MainWindow(QWidget):
         def showDetailWindow():
             file = self.getSelectedFile()
             if file is None: return
-            # path = os.path.realpath(os.path.join(file.directory, file.fileName))
-            path = os.path.join(file.directory, file.name) 
-            if file.extension != None and file.extension != 'None': path+=f'.{file.extension}'
+            path = self.getFilePath(file)
             if os.path.exists(path): os.startfile(path)
             else: QMessageBox.critical(self, "Error", f"Cannot find File or Directory:\n\n{path}")
 
@@ -165,6 +169,25 @@ class MainWindow(QWidget):
         buttonDelete.setFixedHeight(40)
         buttonDelete.clicked.connect(onDeleteButtonClick)
 
+        def onRemoveButtonClick():
+            file = self.getSelectedFile()
+            if file is None: return
+            result = QMessageBox.question(self, "Confirm", f"Delete file from NSFW-Bolt?\n\n{file.name}", QMessageBox.Yes | QMessageBox.No, QMessageBox.No)
+            if result == QMessageBox.Yes:
+                path = self.getFilePath(file)
+                if os.path.isfile(path):
+                    os.remove(path)
+                elif os.path.isdir(path):
+                    shutil.rmtree(path)
+                elif QMessageBox.warning(self, "Confirm", f"File or Folder does not exist.\nDo you want delete it from NSFW-Bolt?", QMessageBox.Yes | QMessageBox.No, QMessageBox.No) != QMessageBox.Yes: return
+                DBInterface.instance().deleteFile(file.index)
+                self.loadFilesFromDB()
+
+        buttonRemove = QPushButton()
+        buttonRemove.setText("Delete\nFrom Disk")
+        buttonRemove.setFixedHeight(40)
+        buttonRemove.clicked.connect(onRemoveButtonClick)
+
 
         layout.addWidget(buttonDetail)
         layout.addWidget(buttonRate)
@@ -175,6 +198,7 @@ class MainWindow(QWidget):
         layout.addSpacing(20)
         layout.addWidget(buttonAdd)
         layout.addWidget(buttonDelete)
+        layout.addWidget(buttonRemove)
 
         return layout
 
