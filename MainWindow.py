@@ -82,7 +82,9 @@ class MainWindow(QWidget):
             if file is None: return
             path = self.getFilePath(file)
             if os.path.isdir(path):
-                path = os.path.join(path, os.listdir(path)[0]) # 이 기능은 사용할지 말지 사용자가 정할 수 있게 해주자
+                interFiles = os.listdir(path)
+                if len(interFiles) > 0:
+                    path = os.path.join(path, interFiles[0]) # 이 기능은 사용할지 말지 사용자가 정할 수 있게 해주자
             if os.path.exists(path): os.startfile(path)
             else: QMessageBox.critical(self, "Error", f"Cannot find File or Directory:\n\n{path}")
 

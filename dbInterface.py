@@ -103,8 +103,16 @@ class DBInterface(__SingletonInstane):
                 f = filter[5:6]
                 if not f.isdigit(): continue
                 sql += ' ' +  f''' R.rate >= {f} '''
-            elif len(filter) > 10 and filter.lower().startswith('extension:'): # 별점 필터
-                sql += ' ' + f''' F.extension LIKE '%{filter[10:]}%' ''' # group_concat을 대상으로 where절 실행시 오류남.. ㅠ
+            elif len(filter) > 4 and filter.lower().startswith('ext:'): # 별점 필터
+                sql += ' ' + f''' F.extension LIKE '%{filter[4:]}%' ''' # group_concat을 대상으로 where절 실행시 오류남.. ㅠ
+            elif filter.lower() == "norate":
+                sql += ' R.rate is NULL '
+            elif filter.lower() == "notag":
+                sql += ' Tag.name is NULL '
+            elif filter.lower() == "folder":
+                sql += ' F.isFolder == True'
+            elif filter.lower() == "nofolder":
+                sql += ' F.isFolder == False'
             else : # 제목 필터
                 sql += ' ' + f''' F.name LIKE '%{filter}%' '''
 
@@ -138,8 +146,8 @@ class DBInterface(__SingletonInstane):
 
     # 별점 추가
     def setRate(self, id, rate):
-        self.__establish()
         self.removeRate(id)
+        self.__establish()
 
         sql = f'''INSERT INTO Rates(fidx, rate) VALUES(
             '{id}',{rate})'''
